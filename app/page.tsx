@@ -1,4 +1,23 @@
+"use client";
+
+import { useState } from "react";
+
 export default function Home() {
+  const [clickResult, setClickResult] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
+
+  const handleClick = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/click", { method: "POST" });
+      const data = await res.json();
+      setClickResult(data);
+    } catch (e: any) {
+      setClickResult({ success: false, error: e.message });
+    }
+    setLoading(false);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-black via-gray-900 to-black text-white">
       {/* Header */}
@@ -35,6 +54,31 @@ export default function Home() {
           <button className="border border-gray-600 hover:border-gray-400 text-gray-300 px-8 py-3 rounded-lg text-lg transition">
             View Examples
           </button>
+        </div>
+
+        {/* DB Test Section */}
+        <div className="mt-16 bg-gray-800/50 border border-gray-700 rounded-xl p-8 max-w-md w-full">
+          <h3 className="text-xl font-semibold mb-4">🧪 Database Test</h3>
+          <button
+            onClick={handleClick}
+            disabled={loading}
+            className="bg-green-600 hover:bg-green-500 disabled:bg-gray-600 text-white px-6 py-3 rounded-lg font-semibold transition w-full"
+          >
+            {loading ? "Recording..." : "Click Me!"}
+          </button>
+          {clickResult && (
+            <div className="mt-4 text-left text-sm">
+              {clickResult.success ? (
+                <>
+                  <p className="text-green-400">✅ Record #{clickResult.id} created</p>
+                  <p className="text-gray-400">Time: {new Date(clickResult.created_at).toLocaleString()}</p>
+                  <p className="text-gray-400">Total clicks: {clickResult.total}</p>
+                </>
+              ) : (
+                <p className="text-red-400">❌ Error: {clickResult.error}</p>
+              )}
+            </div>
+          )}
         </div>
       </main>
 
