@@ -4,9 +4,11 @@ let globalPool: Pool;
 
 export function getDb() {
   if (!globalPool) {
-    globalPool = new Pool({
-      connectionString: process.env.POSTGRES_URL,
-    });
+    const connectionString = process.env.POSTGRES_URL;
+    if (!connectionString) {
+      throw new Error("POSTGRES_URL is not configured");
+    }
+    globalPool = new Pool({ connectionString });
   }
   return globalPool;
 }
