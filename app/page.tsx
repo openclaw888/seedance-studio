@@ -1,8 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import { signIn, signOut, useSession } from "next-auth/react";
 
 export default function Home() {
+  const { data: session, status } = useSession();
   const [clickResult, setClickResult] = useState<any>(null);
   const [loading, setLoading] = useState(false);
 
@@ -28,9 +30,19 @@ export default function Home() {
         <nav className="flex gap-6 text-sm text-gray-400">
           <a href="#features" className="hover:text-white transition">Features</a>
           <a href="#pricing" className="hover:text-white transition">Pricing</a>
-          <button className="bg-purple-600 hover:bg-purple-500 text-white px-4 py-2 rounded-lg transition">
-            Get Started
-          </button>
+          {session ? (
+            <div className="flex items-center gap-3">
+              <img src={session.user?.image || ""} alt="" className="w-8 h-8 rounded-full" />
+              <span className="text-white text-sm">{session.user?.name}</span>
+              <button onClick={() => signOut()} className="text-gray-400 hover:text-white text-sm transition">
+                Sign Out
+              </button>
+            </div>
+          ) : (
+            <button onClick={() => signIn("google")} className="bg-purple-600 hover:bg-purple-500 text-white px-4 py-2 rounded-lg transition">
+              Sign in with Google
+            </button>
+          )}
         </nav>
       </header>
 
@@ -48,8 +60,8 @@ export default function Home() {
           AI video generation model. Text to video, image to video, and more.
         </p>
         <div className="flex gap-4 mt-10">
-          <button className="bg-purple-600 hover:bg-purple-500 text-white px-8 py-3 rounded-lg text-lg font-semibold transition">
-            Start Creating — Free
+          <button onClick={() => session ? null : signIn("google")} className="bg-purple-600 hover:bg-purple-500 text-white px-8 py-3 rounded-lg text-lg font-semibold transition">
+            {session ? `Welcome, ${session.user?.name?.split(" ")[0]}! 🎬` : "Start Creating — Free"}
           </button>
           <button className="border border-gray-600 hover:border-gray-400 text-gray-300 px-8 py-3 rounded-lg text-lg transition">
             View Examples
