@@ -1,17 +1,19 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Fraunces, Instrument_Sans } from "next/font/google";
 import Script from "next/script";
 import Providers from "./providers";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const fraunces = Fraunces({
+  variable: "--font-display",
   subsets: ["latin"],
+  display: "swap",
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const instrumentSans = Instrument_Sans({
+  variable: "--font-body",
   subsets: ["latin"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -35,7 +37,7 @@ export default function RootLayout({
         />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${fraunces.variable} ${instrumentSans.variable} antialiased`}
       >
         <Providers>{children}</Providers>
       </body>

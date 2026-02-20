@@ -4,85 +4,116 @@ import { useState } from "react";
 import { signIn, signOut, useSession } from "next-auth/react";
 import { siteConfig } from "@/config/site";
 
-const featureIcons: Record<string, React.ReactNode> = {
-  Sparkles: (
-    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 0 0-2.456 2.456ZM16.894 20.567 16.5 21.75l-.394-1.183a2.25 2.25 0 0 0-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 0 0 1.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 0 0 1.423 1.423l1.183.394-1.183.394a2.25 2.25 0 0 0-1.423 1.423Z" />
-    </svg>
-  ),
-  Image: (
-    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909M3.75 21h16.5A2.25 2.25 0 0 0 22.5 18.75V5.25A2.25 2.25 0 0 0 20.25 3H3.75A2.25 2.25 0 0 0 1.5 5.25v13.5A2.25 2.25 0 0 0 3.75 21Zm16.5-13.5h.008v.008h-.008V7.5Zm0 0A1.125 1.125 0 1 0 19.125 6.375 1.125 1.125 0 0 0 20.25 7.5Z" />
-    </svg>
-  ),
-  AudioLines: (
-    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M19.114 5.636a9 9 0 0 1 0 12.728M16.463 8.288a5.25 5.25 0 0 1 0 7.424M6.75 8.25l4.72-4.72a.75.75 0 0 1 1.28.53v15.88a.75.75 0 0 1-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.009 9.009 0 0 1 2.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75Z" />
-    </svg>
-  ),
-  Monitor: (
-    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M9 17.25v1.007a3 3 0 0 1-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0 1 15 18.257V17.25m6-12V15a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 15V5.25A2.25 2.25 0 0 1 5.25 3h13.5A2.25 2.25 0 0 1 21 5.25Z" />
-    </svg>
-  ),
-  Users: (
-    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z" />
-    </svg>
-  ),
-  Film: (
-    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M3.375 19.5h17.25m-17.25 0a1.125 1.125 0 0 1-1.125-1.125M3.375 19.5h1.5C5.496 19.5 6 18.996 6 18.375m-3.75 0V5.625m0 12.75v-1.5c0-.621.504-1.125 1.125-1.125m18.375 2.625V5.625m0 12.75c0 .621-.504 1.125-1.125 1.125m1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125m0 3.75h-1.5A1.125 1.125 0 0 1 18 18.375M20.625 4.5H3.375m17.25 0c.621 0 1.125.504 1.125 1.125M20.625 4.5h-1.5C18.504 4.5 18 5.004 18 5.625m3.75 0v1.5c0 .621-.504 1.125-1.125 1.125M3.375 4.5c-.621 0-1.125.504-1.125 1.125M3.375 4.5h1.5C5.496 4.5 6 5.004 6 5.625m-3.75 0v1.5c0 .621.504 1.125 1.125 1.125m0 0h1.5m-1.5 0c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125m1.5-3.75C5.496 8.25 6 7.746 6 7.125v-1.5M4.875 8.25C5.496 8.25 6 8.754 6 9.375v1.5m0-5.25v5.25m0-5.25C6 5.004 6.504 4.5 7.125 4.5h9.75c.621 0 1.125.504 1.125 1.125m1.125 2.625h1.5m-1.5 0A1.125 1.125 0 0 1 18 7.125v-1.5m1.125 2.625c-.621 0-1.125.504-1.125 1.125v1.5m2.625-2.625c.621 0 1.125.504 1.125 1.125v1.5c0 .621-.504 1.125-1.125 1.125M18 5.625v5.25M7.125 12h9.75m-9.75 0A1.125 1.125 0 0 1 6 10.875M7.125 12C6.504 12 6 12.504 6 13.125m0-2.25C6 11.496 5.496 12 4.875 12M18 10.875c0 .621-.504 1.125-1.125 1.125M18 10.875c0 .621.504 1.125 1.125 1.125m-2.25 0c.621 0 1.125.504 1.125 1.125m-12 5.25v-5.25m0 5.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125m-12 0v-1.5c0-.621-.504-1.125-1.125-1.125M18 18.375v-5.25m0 5.25v-1.5c0-.621.504-1.125 1.125-1.125M18 13.125v1.5c0 .621.504 1.125 1.125 1.125M18 13.125c0-.621.504-1.125 1.125-1.125M6 13.125v1.5c0 .621-.504 1.125-1.125 1.125M6 13.125C6 12.504 5.496 12 4.875 12m-1.5 0h1.5m-1.5 0c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125m1.5-3.75C5.496 12 6 12.504 6 13.125" />
-    </svg>
-  ),
-};
-
-const showcaseColors = [
-  "from-violet-600/30 to-indigo-900/40",
-  "from-amber-600/30 to-orange-900/40",
-  "from-emerald-600/30 to-teal-900/40",
-  "from-rose-600/30 to-pink-900/40",
-  "from-cyan-600/30 to-blue-900/40",
-  "from-fuchsia-600/30 to-purple-900/40",
-];
-
 export default function Home() {
   const { data: session } = useSession();
   const [prompt, setPrompt] = useState("");
 
   return (
-    <div className="min-h-screen bg-[#fafafa] text-gray-900">
-      {/* Header */}
-      <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-lg border-b border-gray-100">
-        <div className="max-w-6xl mx-auto flex items-center justify-between px-6 py-4">
-          <a href="/" className="text-xl font-semibold tracking-tight">
-            <span className="text-violet-600">Seedance</span> Studio
+    <div
+      className="min-h-screen"
+      style={{ background: "var(--bg)", color: "var(--text)" }}
+    >
+      {/* ─── Header ─── */}
+      <header
+        className="sticky top-0 z-50"
+        style={{
+          background: "color-mix(in oklch, var(--bg) 85%, transparent)",
+          backdropFilter: "blur(12px)",
+          borderBottom: "1px solid var(--border)",
+        }}
+      >
+        <div
+          className="mx-auto flex items-center justify-between"
+          style={{
+            maxWidth: "72rem",
+            padding: "var(--space-md) var(--space-lg)",
+          }}
+        >
+          <a
+            href="/"
+            className="font-display"
+            style={{
+              fontSize: "clamp(1.125rem, 1rem + 0.5vw, 1.375rem)",
+              fontWeight: 700,
+              letterSpacing: "-0.02em",
+              color: "var(--text)",
+              textDecoration: "none",
+            }}
+          >
+            Seedance
+            <span
+              style={{
+                fontWeight: 400,
+                color: "var(--text-3)",
+                marginLeft: "0.25em",
+              }}
+            >
+              Studio
+            </span>
           </a>
-          <nav className="hidden md:flex items-center gap-8 text-sm text-gray-500">
+
+          <nav className="hidden md:flex items-center" style={{ gap: "var(--space-xl)" }}>
             {siteConfig.nav.links.map((link) => (
               <a
                 key={link.href}
                 href={link.href}
-                className="hover:text-gray-900 transition-colors"
+                style={{
+                  fontSize: "0.875rem",
+                  color: "var(--text-3)",
+                  textDecoration: "none",
+                  transition: "color 150ms",
+                }}
+                onMouseEnter={(e) =>
+                  (e.currentTarget.style.color = "var(--text)")
+                }
+                onMouseLeave={(e) =>
+                  (e.currentTarget.style.color = "var(--text-3)")
+                }
               >
                 {link.label}
               </a>
             ))}
           </nav>
-          <div className="flex items-center gap-3">
+
+          <div className="flex items-center" style={{ gap: "var(--space-sm)" }}>
             {session ? (
-              <div className="flex items-center gap-3">
+              <div className="flex items-center" style={{ gap: "var(--space-sm)" }}>
                 <img
                   src={session.user?.image || ""}
                   alt=""
-                  className="w-8 h-8 rounded-full ring-2 ring-violet-100"
+                  className="rounded-full"
+                  style={{
+                    width: 32,
+                    height: 32,
+                    border: "2px solid var(--border)",
+                  }}
                 />
-                <span className="hidden sm:inline text-sm font-medium text-gray-700">
+                <span
+                  className="hidden sm:inline"
+                  style={{
+                    fontSize: "0.875rem",
+                    fontWeight: 500,
+                    color: "var(--text-2)",
+                  }}
+                >
                   {session.user?.name}
                 </span>
                 <button
                   onClick={() => signOut()}
-                  className="text-sm text-gray-400 hover:text-gray-600 transition-colors"
+                  style={{
+                    fontSize: "0.875rem",
+                    color: "var(--text-muted)",
+                    background: "none",
+                    border: "none",
+                    cursor: "pointer",
+                    transition: "color 150ms",
+                  }}
+                  onMouseEnter={(e) =>
+                    (e.currentTarget.style.color = "var(--text-2)")
+                  }
+                  onMouseLeave={(e) =>
+                    (e.currentTarget.style.color = "var(--text-muted)")
+                  }
                 >
                   Sign Out
                 </button>
@@ -90,7 +121,19 @@ export default function Home() {
             ) : (
               <button
                 onClick={() => signIn("google")}
-                className="bg-gray-900 hover:bg-gray-800 text-white text-sm px-4 py-2 rounded-lg transition-colors"
+                style={{
+                  background: "var(--bg-invert)",
+                  color: "var(--accent-text)",
+                  fontSize: "0.875rem",
+                  fontWeight: 500,
+                  padding: "0.5rem 1.25rem",
+                  borderRadius: "6px",
+                  border: "none",
+                  cursor: "pointer",
+                  transition: "opacity 150ms",
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.85")}
+                onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
               >
                 Sign In
               </button>
@@ -99,247 +142,758 @@ export default function Home() {
         </div>
       </header>
 
-      {/* Hero */}
-      <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-violet-50/80 via-white to-[#fafafa]" />
-        <div className="relative max-w-4xl mx-auto px-6 pt-24 pb-20 md:pt-32 md:pb-28 text-center">
-          <div className="inline-flex items-center gap-2 bg-violet-50 text-violet-700 text-sm font-medium px-4 py-1.5 rounded-full mb-8 border border-violet-100">
-            <span className="w-1.5 h-1.5 bg-violet-500 rounded-full animate-pulse" />
+      {/* ─── Hero ─── */}
+      <section
+        className="animate-reveal"
+        style={{
+          maxWidth: "72rem",
+          margin: "0 auto",
+          padding: "clamp(4rem, 8vw, 8rem) var(--space-lg) clamp(3rem, 6vw, 6rem)",
+        }}
+      >
+        <div style={{ maxWidth: "52rem" }}>
+          <p
+            className="animate-fade"
+            style={{
+              "--delay": "100ms",
+              fontSize: "0.8125rem",
+              fontWeight: 600,
+              letterSpacing: "0.08em",
+              textTransform: "uppercase" as const,
+              color: "var(--accent)",
+              marginBottom: "var(--space-lg)",
+            } as React.CSSProperties}
+          >
             {siteConfig.hero.badge}
-          </div>
-          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.1]">
-            {siteConfig.hero.title}{" "}
-            <span className="bg-gradient-to-r from-violet-600 to-indigo-600 bg-clip-text text-transparent">
+          </p>
+
+          <h1
+            className="font-display animate-reveal"
+            style={{
+              "--delay": "150ms",
+              fontSize: "clamp(2.5rem, 2rem + 4vw, 5rem)",
+              fontWeight: 800,
+              lineHeight: 1.05,
+              letterSpacing: "-0.03em",
+              color: "var(--text)",
+            } as React.CSSProperties}
+          >
+            {siteConfig.hero.title}
+            <br />
+            <span style={{ color: "var(--accent)" }}>
               {siteConfig.hero.titleAccent}
             </span>
           </h1>
-          <p className="text-gray-500 text-lg md:text-xl max-w-2xl mx-auto mt-6 leading-relaxed">
+
+          <p
+            className="animate-reveal"
+            style={{
+              "--delay": "250ms",
+              fontSize: "clamp(1.0625rem, 1rem + 0.5vw, 1.25rem)",
+              lineHeight: 1.6,
+              color: "var(--text-3)",
+              maxWidth: "38rem",
+              marginTop: "var(--space-lg)",
+            } as React.CSSProperties}
+          >
             {siteConfig.hero.subtitle}
           </p>
 
           {/* Prompt Input */}
-          <div className="mt-10 max-w-2xl mx-auto">
-            <div className="relative flex items-center bg-white rounded-2xl shadow-lg shadow-gray-200/60 border border-gray-200 p-2 transition-shadow focus-within:shadow-xl focus-within:shadow-violet-100/40 focus-within:border-violet-200">
+          <div
+            className="animate-reveal"
+            style={{
+              "--delay": "400ms",
+              marginTop: "var(--space-2xl)",
+              maxWidth: "40rem",
+            } as React.CSSProperties}
+          >
+            <div
+              className="flex items-center"
+              style={{
+                background: "var(--bg-surface)",
+                borderRadius: "10px",
+                border: "1px solid var(--border-2)",
+                padding: "6px",
+                transition: "border-color 200ms",
+              }}
+              onFocus={(e) =>
+                (e.currentTarget.style.borderColor = "var(--accent)")
+              }
+              onBlur={(e) =>
+                (e.currentTarget.style.borderColor = "var(--border-2)")
+              }
+            >
               <input
                 type="text"
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
                 placeholder={siteConfig.hero.placeholder}
-                className="flex-1 px-4 py-3 text-sm md:text-base bg-transparent outline-none placeholder:text-gray-400 text-gray-700"
+                style={{
+                  flex: 1,
+                  padding: "0.75rem 1rem",
+                  fontSize: "0.9375rem",
+                  background: "transparent",
+                  border: "none",
+                  outline: "none",
+                  color: "var(--text)",
+                }}
               />
               <button
                 onClick={() => (session ? null : signIn("google"))}
-                className="bg-violet-600 hover:bg-violet-700 text-white px-6 py-3 rounded-xl text-sm font-semibold transition-colors shrink-0"
+                style={{
+                  background: "var(--accent)",
+                  color: "var(--accent-text)",
+                  padding: "0.75rem 1.5rem",
+                  borderRadius: "7px",
+                  border: "none",
+                  fontSize: "0.875rem",
+                  fontWeight: 600,
+                  cursor: "pointer",
+                  whiteSpace: "nowrap" as const,
+                  transition: "background 150ms",
+                }}
+                onMouseEnter={(e) =>
+                  (e.currentTarget.style.background = "var(--accent-hover)")
+                }
+                onMouseLeave={(e) =>
+                  (e.currentTarget.style.background = "var(--accent)")
+                }
               >
                 {session ? siteConfig.hero.signedInCta : siteConfig.hero.cta}
               </button>
             </div>
-            <p className="text-xs text-gray-400 mt-3">
-              Try: &quot;A timelapse of cherry blossoms blooming in spring, macro lens, soft bokeh&quot;
+            <p
+              style={{
+                fontSize: "0.8125rem",
+                color: "var(--text-muted)",
+                marginTop: "var(--space-sm)",
+              }}
+            >
+              Try: &quot;A timelapse of cherry blossoms blooming in spring,
+              macro lens, soft bokeh&quot;
             </p>
           </div>
         </div>
       </section>
 
-      {/* Features */}
-      <section id="features" className="max-w-6xl mx-auto px-6 py-24">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold tracking-tight">
+      {/* ─── Features ─── */}
+      <section
+        id="features"
+        style={{
+          maxWidth: "72rem",
+          margin: "0 auto",
+          padding: "clamp(3rem, 6vw, 6rem) var(--space-lg)",
+        }}
+      >
+        <div
+          className="animate-reveal"
+          style={{
+            "--delay": "0ms",
+            maxWidth: "32rem",
+            marginBottom: "clamp(2.5rem, 4vw, 4rem)",
+          } as React.CSSProperties}
+        >
+          <h2
+            className="font-display"
+            style={{
+              fontSize: "clamp(1.75rem, 1.5rem + 2vw, 2.75rem)",
+              fontWeight: 700,
+              lineHeight: 1.15,
+              letterSpacing: "-0.025em",
+              color: "var(--text)",
+            }}
+          >
             {siteConfig.features.title}
           </h2>
-          <p className="text-gray-500 mt-4 text-lg max-w-xl mx-auto">
+          <p
+            style={{
+              fontSize: "1.0625rem",
+              lineHeight: 1.6,
+              color: "var(--text-3)",
+              marginTop: "var(--space-md)",
+            }}
+          >
             {siteConfig.features.subtitle}
           </p>
         </div>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+
+        {/* Two-column staggered layout */}
+        <div
+          className="grid"
+          style={{
+            gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 20rem), 1fr))",
+            gap: "var(--space-xs)",
+          }}
+        >
           {siteConfig.features.items.map((feature, i) => (
             <div
               key={i}
-              className="group bg-white rounded-2xl p-6 border border-gray-100 hover:border-violet-200 hover:shadow-lg hover:shadow-violet-50/50 transition-all duration-300"
+              className="animate-reveal-scale"
+              style={{
+                "--delay": `${150 + i * 80}ms`,
+                padding: "var(--space-xl) var(--space-lg)",
+                borderBottom: "1px solid var(--border)",
+                transition: "background 200ms",
+              } as React.CSSProperties}
+              onMouseEnter={(e) =>
+                (e.currentTarget.style.background = "var(--bg-elevated)")
+              }
+              onMouseLeave={(e) =>
+                (e.currentTarget.style.background = "transparent")
+              }
             >
-              <div className="w-10 h-10 rounded-xl bg-violet-50 text-violet-600 flex items-center justify-center mb-4 group-hover:bg-violet-100 transition-colors">
-                {featureIcons[feature.icon]}
-              </div>
-              <h3 className="text-lg font-semibold mb-2">{feature.title}</h3>
-              <p className="text-gray-500 text-sm leading-relaxed">
-                {feature.description}
-              </p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Showcase */}
-      <section id="showcase" className="bg-white py-24">
-        <div className="max-w-6xl mx-auto px-6">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold tracking-tight">
-              {siteConfig.showcase.title}
-            </h2>
-            <p className="text-gray-500 mt-4 text-lg max-w-xl mx-auto">
-              {siteConfig.showcase.subtitle}
-            </p>
-          </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {siteConfig.showcase.items.map((item, i) => (
-              <div
-                key={i}
-                className="group relative rounded-2xl overflow-hidden border border-gray-100 hover:border-violet-200 transition-all duration-300 hover:shadow-lg hover:shadow-violet-50/50"
-              >
-                <div
-                  className={`aspect-video bg-gradient-to-br ${showcaseColors[i % showcaseColors.length]} flex items-center justify-center`}
+              <div className="flex items-start" style={{ gap: "var(--space-md)" }}>
+                <span
+                  style={{
+                    fontSize: "0.75rem",
+                    fontWeight: 600,
+                    color: "var(--accent)",
+                    fontVariantNumeric: "tabular-nums",
+                    minWidth: "1.5rem",
+                    paddingTop: "2px",
+                  }}
                 >
-                  <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                    <svg
-                      className="w-5 h-5 text-white ml-0.5"
-                      fill="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path d="M8 5v14l11-7z" />
-                    </svg>
-                  </div>
-                </div>
-                <div className="p-4">
-                  <p className="text-sm text-gray-500 leading-relaxed line-clamp-2">
-                    &ldquo;{item.prompt}&rdquo;
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+                <div>
+                  <h3
+                    style={{
+                      fontSize: "1.0625rem",
+                      fontWeight: 600,
+                      color: "var(--text)",
+                      letterSpacing: "-0.01em",
+                    }}
+                  >
+                    {feature.title}
+                  </h3>
+                  <p
+                    style={{
+                      fontSize: "0.9375rem",
+                      lineHeight: 1.6,
+                      color: "var(--text-3)",
+                      marginTop: "var(--space-xs)",
+                    }}
+                  >
+                    {feature.description}
                   </p>
                 </div>
               </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Pricing */}
-      <section id="pricing" className="max-w-6xl mx-auto px-6 py-24">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold tracking-tight">
-            {siteConfig.pricing.title}
-          </h2>
-          <p className="text-gray-500 mt-4 text-lg">
-            {siteConfig.pricing.subtitle}
-          </p>
-        </div>
-        <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-          {siteConfig.pricing.tiers.map((tier, i) => (
-            <div
-              key={i}
-              className={`rounded-2xl p-8 border transition-all duration-300 ${
-                tier.featured
-                  ? "bg-gray-900 text-white border-gray-800 shadow-2xl shadow-gray-900/20 scale-[1.02]"
-                  : "bg-white border-gray-200 hover:border-violet-200 hover:shadow-lg hover:shadow-violet-50/50"
-              }`}
-            >
-              <div className="mb-6">
-                <h3
-                  className={`text-lg font-semibold ${
-                    tier.featured ? "text-white" : "text-gray-900"
-                  }`}
-                >
-                  {tier.name}
-                </h3>
-                <p
-                  className={`text-sm mt-1 ${
-                    tier.featured ? "text-gray-400" : "text-gray-500"
-                  }`}
-                >
-                  {tier.description}
-                </p>
-              </div>
-              <div className="mb-6">
-                <span className="text-4xl font-bold">{tier.price}</span>
-                <span
-                  className={`text-sm ml-1 ${
-                    tier.featured ? "text-gray-400" : "text-gray-500"
-                  }`}
-                >
-                  /{tier.period}
-                </span>
-              </div>
-              <button
-                onClick={() => (session ? null : signIn("google"))}
-                className={`w-full py-3 rounded-xl text-sm font-semibold transition-colors ${
-                  tier.featured
-                    ? "bg-violet-600 hover:bg-violet-500 text-white"
-                    : "bg-gray-900 hover:bg-gray-800 text-white"
-                }`}
-              >
-                {tier.cta}
-              </button>
-              <ul className="mt-6 space-y-3">
-                {tier.features.map((feature, j) => (
-                  <li key={j} className="flex items-start gap-3 text-sm">
-                    <svg
-                      className={`w-4 h-4 mt-0.5 shrink-0 ${
-                        tier.featured ? "text-violet-400" : "text-violet-600"
-                      }`}
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                      strokeWidth={2}
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="m4.5 12.75 6 6 9-13.5"
-                      />
-                    </svg>
-                    <span
-                      className={
-                        tier.featured ? "text-gray-300" : "text-gray-600"
-                      }
-                    >
-                      {feature}
-                    </span>
-                  </li>
-                ))}
-              </ul>
             </div>
           ))}
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="bg-gradient-to-r from-violet-600 to-indigo-600 py-20">
-        <div className="max-w-3xl mx-auto px-6 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold text-white tracking-tight">
+      {/* ─── Showcase ─── */}
+      <section
+        id="showcase"
+        style={{
+          background: "var(--bg-surface)",
+          borderTop: "1px solid var(--border)",
+          borderBottom: "1px solid var(--border)",
+          padding: "clamp(4rem, 8vw, 7rem) 0",
+          marginTop: "var(--space-2xl)",
+        }}
+      >
+        <div
+          style={{
+            maxWidth: "72rem",
+            margin: "0 auto",
+            padding: "0 var(--space-lg)",
+          }}
+        >
+          <div
+            className="animate-reveal"
+            style={{
+              maxWidth: "32rem",
+              marginBottom: "clamp(2rem, 4vw, 3.5rem)",
+            }}
+          >
+            <h2
+              className="font-display"
+              style={{
+                fontSize: "clamp(1.75rem, 1.5rem + 2vw, 2.75rem)",
+                fontWeight: 700,
+                lineHeight: 1.15,
+                letterSpacing: "-0.025em",
+                color: "var(--text)",
+              }}
+            >
+              {siteConfig.showcase.title}
+            </h2>
+            <p
+              style={{
+                fontSize: "1.0625rem",
+                lineHeight: 1.6,
+                color: "var(--text-3)",
+                marginTop: "var(--space-md)",
+              }}
+            >
+              {siteConfig.showcase.subtitle}
+            </p>
+          </div>
+
+          {/* Varied grid: first row 2 cols, second row 3 cols offset */}
+          <div
+            className="grid"
+            style={{
+              gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 18rem), 1fr))",
+              gap: "var(--space-md)",
+            }}
+          >
+            {siteConfig.showcase.items.map((item, i) => {
+              const warmHues = [32, 55, 145, 22, 280, 200];
+              const hue = warmHues[i % warmHues.length];
+              return (
+                <div
+                  key={i}
+                  className="group animate-reveal-scale"
+                  style={{
+                    "--delay": `${100 + i * 70}ms`,
+                    borderRadius: "8px",
+                    overflow: "hidden",
+                    border: "1px solid var(--border)",
+                    transition: "transform 300ms var(--ease-out-quart), box-shadow 300ms",
+                    cursor: "pointer",
+                  } as React.CSSProperties}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = "translateY(-3px)";
+                    e.currentTarget.style.boxShadow =
+                      "0 8px 24px oklch(18% 0.015 65 / 0.08)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = "translateY(0)";
+                    e.currentTarget.style.boxShadow = "none";
+                  }}
+                >
+                  <div
+                    style={{
+                      aspectRatio: i === 0 || i === 3 ? "4/3" : "16/10",
+                      background: `oklch(88% 0.06 ${hue})`,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: 40,
+                        height: 40,
+                        borderRadius: "50%",
+                        background: `oklch(96% 0.02 ${hue})`,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        transition: "transform 300ms var(--ease-out-quart)",
+                      }}
+                    >
+                      <svg
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill={`oklch(40% 0.08 ${hue})`}
+                      >
+                        <path d="M8 5v14l11-7z" />
+                      </svg>
+                    </div>
+                  </div>
+                  <div style={{ padding: "var(--space-md) var(--space-md) var(--space-lg)" }}>
+                    <p
+                      style={{
+                        fontSize: "0.875rem",
+                        lineHeight: 1.6,
+                        color: "var(--text-3)",
+                      }}
+                    >
+                      &ldquo;{item.prompt}&rdquo;
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* ─── Pricing ─── */}
+      <section
+        id="pricing"
+        style={{
+          maxWidth: "72rem",
+          margin: "0 auto",
+          padding: "clamp(4rem, 8vw, 7rem) var(--space-lg)",
+        }}
+      >
+        <div
+          className="animate-reveal"
+          style={{
+            maxWidth: "32rem",
+            marginBottom: "clamp(2.5rem, 4vw, 4rem)",
+          }}
+        >
+          <h2
+            className="font-display"
+            style={{
+              fontSize: "clamp(1.75rem, 1.5rem + 2vw, 2.75rem)",
+              fontWeight: 700,
+              lineHeight: 1.15,
+              letterSpacing: "-0.025em",
+              color: "var(--text)",
+            }}
+          >
+            {siteConfig.pricing.title}
+          </h2>
+          <p
+            style={{
+              fontSize: "1.0625rem",
+              lineHeight: 1.6,
+              color: "var(--text-3)",
+              marginTop: "var(--space-md)",
+            }}
+          >
+            {siteConfig.pricing.subtitle}
+          </p>
+        </div>
+
+        <div
+          className="grid"
+          style={{
+            gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 17rem), 1fr))",
+            gap: "var(--space-md)",
+            maxWidth: "56rem",
+          }}
+        >
+          {siteConfig.pricing.tiers.map((tier, i) => {
+            const isFeatured = tier.featured;
+            return (
+              <div
+                key={i}
+                className="animate-reveal-scale"
+                style={{
+                  "--delay": `${100 + i * 100}ms`,
+                  background: isFeatured ? "var(--bg-invert)" : "var(--bg-surface)",
+                  color: isFeatured ? "var(--accent-text)" : "var(--text)",
+                  borderRadius: "10px",
+                  padding: "var(--space-xl) var(--space-lg)",
+                  border: isFeatured ? "none" : "1px solid var(--border)",
+                  position: "relative" as const,
+                } as React.CSSProperties}
+              >
+                {isFeatured && (
+                  <span
+                    style={{
+                      position: "absolute",
+                      top: "var(--space-md)",
+                      right: "var(--space-md)",
+                      fontSize: "0.6875rem",
+                      fontWeight: 600,
+                      letterSpacing: "0.05em",
+                      textTransform: "uppercase" as const,
+                      color: "var(--accent)",
+                      background: "oklch(30% 0.04 32)",
+                      padding: "0.25rem 0.625rem",
+                      borderRadius: "4px",
+                    }}
+                  >
+                    Popular
+                  </span>
+                )}
+
+                <div style={{ marginBottom: "var(--space-xl)" }}>
+                  <h3
+                    style={{
+                      fontSize: "1rem",
+                      fontWeight: 600,
+                      letterSpacing: "-0.01em",
+                    }}
+                  >
+                    {tier.name}
+                  </h3>
+                  <p
+                    style={{
+                      fontSize: "0.8125rem",
+                      color: isFeatured
+                        ? "oklch(70% 0.01 65)"
+                        : "var(--text-muted)",
+                      marginTop: "var(--space-xs)",
+                    }}
+                  >
+                    {tier.description}
+                  </p>
+                </div>
+
+                <div
+                  style={{
+                    marginBottom: "var(--space-lg)",
+                    display: "flex",
+                    alignItems: "baseline",
+                    gap: "0.25rem",
+                  }}
+                >
+                  <span
+                    className="font-display"
+                    style={{
+                      fontSize: "clamp(2rem, 1.5rem + 1.5vw, 2.75rem)",
+                      fontWeight: 700,
+                      letterSpacing: "-0.03em",
+                    }}
+                  >
+                    {tier.price}
+                  </span>
+                  <span
+                    style={{
+                      fontSize: "0.8125rem",
+                      color: isFeatured
+                        ? "oklch(70% 0.01 65)"
+                        : "var(--text-muted)",
+                    }}
+                  >
+                    /{tier.period}
+                  </span>
+                </div>
+
+                <button
+                  onClick={() => (session ? null : signIn("google"))}
+                  style={{
+                    width: "100%",
+                    padding: "0.75rem",
+                    borderRadius: "7px",
+                    border: isFeatured
+                      ? "none"
+                      : "1px solid var(--border-2)",
+                    background: isFeatured ? "var(--accent)" : "transparent",
+                    color: isFeatured ? "var(--accent-text)" : "var(--text)",
+                    fontSize: "0.875rem",
+                    fontWeight: 600,
+                    cursor: "pointer",
+                    transition: "background 150ms, opacity 150ms",
+                  }}
+                  onMouseEnter={(e) => {
+                    if (isFeatured) {
+                      e.currentTarget.style.background = "var(--accent-hover)";
+                    } else {
+                      e.currentTarget.style.background = "var(--bg-elevated)";
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (isFeatured) {
+                      e.currentTarget.style.background = "var(--accent)";
+                    } else {
+                      e.currentTarget.style.background = "transparent";
+                    }
+                  }}
+                >
+                  {tier.cta}
+                </button>
+
+                <ul
+                  style={{
+                    marginTop: "var(--space-xl)",
+                    listStyle: "none",
+                    padding: 0,
+                    display: "flex",
+                    flexDirection: "column" as const,
+                    gap: "var(--space-sm)",
+                  }}
+                >
+                  {tier.features.map((feature, j) => (
+                    <li
+                      key={j}
+                      className="flex items-start"
+                      style={{
+                        gap: "var(--space-sm)",
+                        fontSize: "0.875rem",
+                        color: isFeatured
+                          ? "oklch(80% 0.01 65)"
+                          : "var(--text-2)",
+                      }}
+                    >
+                      <svg
+                        width="14"
+                        height="14"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke={
+                          isFeatured
+                            ? "oklch(60% 0.12 32)"
+                            : "oklch(52% 0.17 32)"
+                        }
+                        strokeWidth={2.5}
+                        style={{ marginTop: 3, flexShrink: 0 }}
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="m4.5 12.75 6 6 9-13.5"
+                        />
+                      </svg>
+                      <span>{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* ─── CTA ─── */}
+      <section
+        className="animate-reveal"
+        style={{
+          maxWidth: "72rem",
+          margin: "0 auto",
+          padding: "0 var(--space-lg) clamp(4rem, 8vw, 7rem)",
+        }}
+      >
+        <div
+          style={{
+            background: "var(--bg-invert)",
+            borderRadius: "12px",
+            padding: "clamp(3rem, 6vw, 5rem) clamp(2rem, 4vw, 4rem)",
+            display: "flex",
+            flexDirection: "column" as const,
+            alignItems: "flex-start",
+          }}
+        >
+          <h2
+            className="font-display"
+            style={{
+              fontSize: "clamp(1.75rem, 1.5rem + 2vw, 3rem)",
+              fontWeight: 700,
+              lineHeight: 1.1,
+              letterSpacing: "-0.025em",
+              color: "var(--accent-text)",
+              maxWidth: "28rem",
+            }}
+          >
             {siteConfig.cta.title}
           </h2>
-          <p className="text-violet-100 mt-4 text-lg">
+          <p
+            style={{
+              fontSize: "1.0625rem",
+              lineHeight: 1.6,
+              color: "oklch(70% 0.01 65)",
+              marginTop: "var(--space-md)",
+              maxWidth: "32rem",
+            }}
+          >
             {siteConfig.cta.subtitle}
           </p>
           <button
             onClick={() => (session ? null : signIn("google"))}
-            className="mt-8 bg-white text-violet-700 hover:bg-violet-50 px-8 py-3.5 rounded-xl text-sm font-semibold transition-colors shadow-lg shadow-violet-900/20"
+            style={{
+              marginTop: "var(--space-xl)",
+              background: "var(--accent)",
+              color: "var(--accent-text)",
+              padding: "0.875rem 2rem",
+              borderRadius: "7px",
+              border: "none",
+              fontSize: "0.9375rem",
+              fontWeight: 600,
+              cursor: "pointer",
+              transition: "background 150ms",
+            }}
+            onMouseEnter={(e) =>
+              (e.currentTarget.style.background = "var(--accent-hover)")
+            }
+            onMouseLeave={(e) =>
+              (e.currentTarget.style.background = "var(--accent)")
+            }
           >
             {siteConfig.cta.button}
           </button>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="bg-white border-t border-gray-100">
-        <div className="max-w-6xl mx-auto px-6 py-16">
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-10">
-            <div>
-              <a href="/" className="text-lg font-semibold tracking-tight">
-                <span className="text-violet-600">Seedance</span> Studio
+      {/* ─── Footer ─── */}
+      <footer
+        style={{
+          borderTop: "1px solid var(--border)",
+          marginTop: "var(--space-3xl)",
+        }}
+      >
+        <div
+          style={{
+            maxWidth: "72rem",
+            margin: "0 auto",
+            padding: "var(--space-3xl) var(--space-lg) var(--space-2xl)",
+          }}
+        >
+          <div
+            className="grid"
+            style={{
+              gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 10rem), 1fr))",
+              gap: "var(--space-2xl)",
+            }}
+          >
+            <div style={{ gridColumn: "span 1" }}>
+              <a
+                href="/"
+                className="font-display"
+                style={{
+                  fontSize: "1.125rem",
+                  fontWeight: 700,
+                  letterSpacing: "-0.02em",
+                  color: "var(--text)",
+                  textDecoration: "none",
+                }}
+              >
+                Seedance
               </a>
-              <p className="text-gray-500 text-sm mt-3 leading-relaxed max-w-xs">
-                Professional AI video generation for creators, studios, and teams.
+              <p
+                style={{
+                  fontSize: "0.875rem",
+                  lineHeight: 1.6,
+                  color: "var(--text-muted)",
+                  marginTop: "var(--space-sm)",
+                  maxWidth: "18rem",
+                }}
+              >
+                Professional AI video generation for creators, studios, and
+                teams.
               </p>
             </div>
+
             {siteConfig.footer.columns.map((col, i) => (
               <div key={i}>
-                <h4 className="text-sm font-semibold text-gray-900 mb-4">
+                <h4
+                  style={{
+                    fontSize: "0.75rem",
+                    fontWeight: 600,
+                    letterSpacing: "0.06em",
+                    textTransform: "uppercase" as const,
+                    color: "var(--text-3)",
+                    marginBottom: "var(--space-md)",
+                  }}
+                >
                   {col.title}
                 </h4>
-                <ul className="space-y-2.5">
+                <ul
+                  style={{
+                    listStyle: "none",
+                    padding: 0,
+                    display: "flex",
+                    flexDirection: "column" as const,
+                    gap: "var(--space-sm)",
+                  }}
+                >
                   {col.links.map((link, j) => (
                     <li key={j}>
                       <a
                         href={link.href}
-                        className="text-sm text-gray-500 hover:text-gray-900 transition-colors"
+                        style={{
+                          fontSize: "0.875rem",
+                          color: "var(--text-muted)",
+                          textDecoration: "none",
+                          transition: "color 150ms",
+                        }}
+                        onMouseEnter={(e) =>
+                          (e.currentTarget.style.color = "var(--text)")
+                        }
+                        onMouseLeave={(e) =>
+                          (e.currentTarget.style.color = "var(--text-muted)")
+                        }
                       >
                         {link.label}
                       </a>
@@ -349,7 +903,16 @@ export default function Home() {
               </div>
             ))}
           </div>
-          <div className="mt-12 pt-8 border-t border-gray-100 text-center text-sm text-gray-400">
+
+          <div
+            style={{
+              marginTop: "var(--space-3xl)",
+              paddingTop: "var(--space-lg)",
+              borderTop: "1px solid var(--border)",
+              fontSize: "0.8125rem",
+              color: "var(--text-muted)",
+            }}
+          >
             {siteConfig.footer.copyright}
           </div>
         </div>
